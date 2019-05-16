@@ -1,6 +1,7 @@
 # Ansible <!-- this role name --> role
 
-This is an [Ansible](http://www.ansible.com) role which <!-- brief description of the role goes here -->.
+This is an [Ansible](http://www.ansible.com) role which restricts execution of
+periodic tasks through 'at' command to root users.
 
 ## Requirements
 

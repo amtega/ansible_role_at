@@ -1,2 +1,11 @@
 ---
 # Role variables
+
+at_perm_files_list:
+  - /etc/at.deny
+  - /etc/at.allow
+
+at_files_status:
+  owner: root
+  group: root
+  mode:  "0700"
