@@ -1,2 +1,6 @@
 ---
 # Role tasks
+
+- name: restrict permissions from users
+  include_tasks: change_file_status.yml
+  with_items: "{{ at_perm_files_list }}"

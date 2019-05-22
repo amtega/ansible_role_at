@@ -1,2 +1,72 @@
 ---
 # Tasks for testing role
+- name: Configure vagrant sandbox environment
+  hosts: localhost
+  roles:
+    - role: amtega.vagrant_presets
+      vagrant_presets_boxes_json_query: >-
+        [? starts_with(name, `centos-6`)
+           || starts_with(name, `centos-7`)
+           || starts_with(name, `fedora-27`)
+           || starts_with(name, `fedora-28`) ]
+  tags:
+    - sandbox
+
+- name: Run idempotence test
+  hosts: localhost
+  roles:
+    - role: amtega.vagrant_sandbox
+      vagrant_sandbox_state: started
+  tags:
+    - sandbox
+
+- name: Prepare some variables required by the tests
+  hosts: vagrant_sandbox_vms
+  tasks:
+    - name: Setup some variables required by tests
+      set_fact:
+        iptables_zone_SERVICE:
+          name: SERVICE
+          interfaces: eth0
+          log: yes
+        iptables_service_ss:
+          name: ssh
+          ports: 22
+          zones: SERVICE
+  tags:
+    - idempotence
+
+# test role
+- name: test amtega.at role
+  hosts: vagrant_sandbox_vms
+  roles:
+    - role: amtega.packages
+      vars:
+        packages_os:
+          all:
+            all:
+              at: present
+          # fedora:
+          #   28:
+          #     at: present
+      #           cronie-anacron: present
+
+    - role: amtega.at
+
+  tasks:
+    - include_role:
+        name: amtega.at
+        tasks_from: check_file_status_msg.yml
+      with_items: "{{ at_perm_files_list }}"
+
+  tags:
+    - idempotence
+
+- name: Cleanup vagrant sandbox
+  hosts: localhost
+  roles:
+    - role: amtega.vagrant_sandbox
+      vagrant_sandbox_state: absent
+  tags:
+    - cleanup
+    - sandbox
