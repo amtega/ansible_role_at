@@ -5,7 +5,6 @@ at_perm_files_list:
   - /etc/at.deny
   - /etc/at.allow
 
-at_files_status:
-  owner: root
-  group: root
-  mode:  "0700"
+at_files_owner: root
+at_files_group: root
+at_files_mode:  "0700"
