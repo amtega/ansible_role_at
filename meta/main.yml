@@ -38,7 +38,6 @@ dependencies:
         all:
           all:
             at: present
-            # "cronie-anacron": present
-            # "crontabs": present
+
     tags:
       - role::amtega.at
