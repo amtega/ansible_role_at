@@ -1,49 +1,51 @@
 ---
 # Role tasks
 
-- name: Setup at.allow file
-  lineinfile:
-    path: /etc/at.allow
-    line: "{{ at_user_item.username }}"
-    state: "{{ at_user_item.state | default('present') }}"
-    create: yes
-  loop: "{{ at_allow }}"
-  loop_control:
-    loop_var: at_user_item
-    label: >-
-      {{ at_user_item.username }}
-      {{ at_user_item.state | default('present') }}
+- block:
+    - name: Setup at.allow file
+      lineinfile:
+        path: /etc/at.allow
+        line: "{{ at_user_item.username }}"
+        state: "{{ at_user_item.state | default('present') }}"
+        create: yes
+      loop: "{{ at_allow }}"
+      loop_control:
+        loop_var: at_user_item
+        label: >-
+          {{ at_user_item.username }}
+          {{ at_user_item.state | default('present') }}
 
-- name: Setup at.deny file
-  lineinfile:
-    path: /etc/at.deny
-    line: "{{ at_user_item.username }}"
-    state: "{{ at_user_item.state | default('present') }}"
-    create: yes
-  loop: "{{ at_deny }}"
-  loop_control:
-    loop_var: at_user_item
-    label: >-
-      {{ at_user_item.username }}
-      {{ at_user_item.state | default('present') }}
-#######################################################
-- name: Check at config files and directories
-  stat:
-    path: "{{ at_perm_file_item }}"
-  loop: "{{ at_perm_files_list }}"
-  loop_control:
-    loop_var: at_perm_file_item
-  register: at_check_files_result
+    - name: Setup at.deny file
+      lineinfile:
+        path: /etc/at.deny
+        line: "{{ at_user_item.username }}"
+        state: "{{ at_user_item.state | default('present') }}"
+        create: yes
+      loop: "{{ at_deny }}"
+      loop_control:
+        loop_var: at_user_item
+        label: >-
+          {{ at_user_item.username }}
+          {{ at_user_item.state | default('present') }}
 
-- name: Setup at config files and directories
-  file:
-    path: "{{ at_file_item }}"
-    owner: "{{ at_files_owner }}"
-    group: "{{ at_files_group }}"
-    mode: "{{ at_files_mode }}"
-  when: at_check_files_result.results[at_file_index].stat.exists
-  loop: "{{ at_perm_files_list }}"
-  loop_control:
-    loop_var: at_file_item
-    index_var: at_file_index
-########################################################
+    - name: Check at config files and directories
+      stat:
+        path: "{{ at_perm_file_item }}"
+      loop: "{{ at_files }}"
+      loop_control:
+        loop_var: at_perm_file_item
+      register: at_check_files_result
+
+    - name: Setup at config files and directories
+      file:
+        path: "{{ at_file_item }}"
+        owner: "{{ at_owner }}"
+        group: "{{ at_group }}"
+        mode: "{{ at_mode }}"
+      when: at_check_files_result.results[at_file_index].stat.exists
+      loop: "{{ at_files }}"
+      loop_control:
+        loop_var: at_file_item
+        index_var: at_file_index
+  tags:
+    - role::at

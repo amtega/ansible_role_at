@@ -1,52 +1,27 @@
-# Ansible amtega.at role
+# Ansible at role
 
-This is an [Ansible](http://www.ansible.com) role which restricts execution of
-periodic tasks through 'at' command to root users.
-
-## Requirements
-
-[Ansible 2.7+](http://docs.ansible.com/ansible/latest/intro_installation.html)
+This is an [Ansible](http://www.ansible.com) role which configures at tool.
 
 ## Role Variables
 
-There are no default variables. The role checks the files on the operating systems.
-
-## Tests
-
-
-## Dependencies
-
-- [amtega.check_platform](https://galaxy.ansible.com/amtega/check_platform)
-- [amtega.proxy_client](https://galaxy.ansible.com/amtega/proxy_client)
-- [amtega.packages](https://galaxy.ansible.com/amtega/packages)
+A list of all the default variables for this role is available in `defaults/main.yml`.
 
 ## Usage
-
-<!-- Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too. For example: -->
 
 This is an example playbook:
 
 ```yaml
 ---
-- name: test amtega.at role
-  hosts: vagrant_sandbox_vms
+- host: all
   roles:
-    - role: amtega.packages
-      vars:
-        packages_os:
-          all:
-            all:
-              at: present
-
-    - role: amtega.at
-
+    - amtega.at
 ```
 
 ## Testing
 
-Tests are based on Vagrant machines.
+Tests are based on docker containers. You can setup docker engine quickly using the playbook `files/setup.yml` available in the role [amtega.docker_engine](https://galaxy.ansible.com/amtega/docker_engine).
 
-Once you have a test machine, you can run the tests with the following commands:
+Once you have docker, you can run the tests with the following commands:
 
 ```shell
 $ cd amtega.at/tests

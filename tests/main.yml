@@ -1,54 +1,50 @@
 ---
 # Tasks for testing role
 
-- name: Configure vagrant sandbox environment
+- name: Configure docker sandbox environment
   hosts: localhost
   roles:
-    - role: amtega.vagrant_presets
-      vagrant_presets_boxes_json_query: >-
+    - role: amtega.docker_presets
+      docker_presets_images_json_query: >-
         [? starts_with(name, `centos-6`)
            || starts_with(name, `centos-7`)
            || starts_with(name, `fedora-27`)
-           || starts_with(name, `fedora-28`) ]
+           || starts_with(name, `fedora-28`)
+           || starts_with(name, `fedora-29`) ]
   tags:
     - sandbox
 
 - name: Run idempotence test
   hosts: localhost
   roles:
-    - role: amtega.vagrant_sandbox
-      vagrant_sandbox_state: started
+    - role: amtega.docker_sandbox
+      docker_sandbox_state: started
   tags:
     - sandbox
 
-# test role
-- name: test amtega.at role
-  hosts: vagrant_sandbox_vms
+- name: Test at role
+  hosts: docker_sandbox_containers
   roles:
-    - role: amtega.at
-      vars:
-        at_deny:
-          - username: nobody
-            state: present
-        at_allow:
-          - username: root
-            state: present
-
+      - role: amtega.at
+        vars:
+          at_deny:
+            - username: nobody
+              state: present
   tasks:
-    - name: Read at config files and directories
+    - name: Read at config files
       stat:
         path: "{{ item }}"
-      loop: "{{ at_perm_files_list }}"
-      register: at_files_result
+      loop: "{{ at_files }}"
+      register: check_files_result
 
     - name: Assert that permissions are correct
       assert:
-          that:
-            - at_files_result.results[index].stat.mode == at_files_mode
-            - at_files_result.results[index].stat.gr_name == at_files_group
-            - at_files_result.results[index].stat.pw_name == at_files_owner
-      when: at_files_result.results[index].stat.mode is defined
-      loop: "{{ at_perm_files_list }}"
+        that:
+          - check_files_result.results[index].stat.mode == at_mode
+          - check_files_result.results[index].stat.gr_name == at_group
+          - check_files_result.results[index].stat.pw_name == at_owner
+      when: check_files_result.results[index].stat.mode is defined
+      loop: "{{ at_files }}"
       loop_control:
         index_var: index
 
@@ -57,29 +53,24 @@
       register: read_at_allow_result
       changed_when: no
 
-    - name: Assert that /etc/at.allow is correct
-      assert:
-        that:
-            - read_at_allow_result.stdout is search('root')
-
     - name: Read /etc/at.deny file
       command: cat /etc/at.deny
       register: read_at_deny_result
       changed_when: no
 
-    - name: Assert that /etc/at.deny is correct
+    - name: Assert at.allow and at.deny files are correct
       assert:
         that:
-            - read_at_deny_result.stdout is search('nobody')
-
+          - read_at_allow_result.stdout is search("root")
+          - read_at_deny_result.stdout is search("nobody")
   tags:
     - idempotence
 
-- name: Cleanup vagrant sandbox
+- name: Cleanup docker sandbox
   hosts: localhost
   roles:
-    - role: amtega.vagrant_sandbox
-      vagrant_sandbox_state: absent
+    - role: amtega.docker_sandbox
+      docker_sandbox_state: absent
   tags:
     - cleanup
     - sandbox
