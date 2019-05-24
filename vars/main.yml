@@ -1,10 +1,10 @@
 ---
 # Role variables
 
-at_perm_files_list:
+at_files:
   - /etc/at.deny
   - /etc/at.allow
 
-at_files_owner: root
-at_files_group: root
-at_files_mode:  "0700"
+at_owner: root
+at_group: root
+at_mode:  "0700"

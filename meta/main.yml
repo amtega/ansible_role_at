@@ -2,7 +2,7 @@
 # Role dependencies
 
 galaxy_info:
-  role_name: amtega.at
+  role_name: at
   author: Carlos Chedas Fernández
   description: Configure cron
   company: AMTEGA - Xunta de Galicia
@@ -38,6 +38,5 @@ dependencies:
         all:
           all:
             at: present
-
     tags:
       - role::amtega.at
