@@ -1,5 +1,6 @@
 ---
 # Tasks for testing role
+
 - name: Configure vagrant sandbox environment
   hosts: localhost
   roles:
@@ -20,44 +21,56 @@
   tags:
     - sandbox
 
-- name: Prepare some variables required by the tests
-  hosts: vagrant_sandbox_vms
-  tasks:
-    - name: Setup some variables required by tests
-      set_fact:
-        iptables_zone_SERVICE:
-          name: SERVICE
-          interfaces: eth0
-          log: yes
-        iptables_service_ss:
-          name: ssh
-          ports: 22
-          zones: SERVICE
-  tags:
-    - idempotence
-
 # test role
 - name: test amtega.at role
   hosts: vagrant_sandbox_vms
   roles:
-    - role: amtega.packages
-      vars:
-        packages_os:
-          all:
-            all:
-              at: present
-          # fedora:
-          #   28:
-          #     at: present
-      #           cronie-anacron: present
-
     - role: amtega.at
+      vars:
+        at_deny:
+          - username: nobody
+            state: present
+        at_allow:
+          - username: root
+            state: present
 
   tasks:
-    - include_role:
-        name: amtega.at
-        tasks_from: check_file_status_msg.yml
-      with_items: "{{ at_perm_files_list }}"
+    - name: Read at config files and directories
+      stat:
+        path: "{{ item }}"
+      loop: "{{ at_perm_files_list }}"
+      register: at_files_result
+
+    - name: Assert that permissions are correct
+      assert:
+          that:
+            - at_files_result.results[index].stat.mode == at_files_mode
+            - at_files_result.results[index].stat.gr_name == at_files_group
+            - at_files_result.results[index].stat.pw_name == at_files_owner
+      when: at_files_result.results[index].stat.mode is defined
+      loop: "{{ at_perm_files_list }}"
+      loop_control:
+        index_var: index
+
+    - name: Read /etc/at.allow file
+      command: cat /etc/at.allow
+      register: read_at_allow_result
+      changed_when: no
+
+    - name: Assert that /etc/at.allow is correct
+      assert:
+        that:
+            - read_at_allow_result.stdout is search('root')
+
+    - name: Read /etc/at.deny file
+      command: cat /etc/at.deny
+      register: read_at_deny_result
+      changed_when: no
+
+    - name: Assert that /etc/at.deny is correct
+      assert:
+        that:
+            - read_at_deny_result.stdout is search('nobody')
 
   tags:
     - idempotence

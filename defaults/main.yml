@@ -1,2 +1,24 @@
 ---
 # Role default lower priority variables
+
+# List of dict with users to setup in at.allow file. The structure of the
+# dicts is the following:
+#
+# {
+#   username: <user>    # User to manage
+#   state: <state>      # Can be present or absent. Default is present
+# }
+
+at_allow:
+  - username: root
+    state: present
+
+# List of dict with users to setup in at.deny file. The structure of the
+# dicts is the following:
+#
+# {
+#   username: <user>    # User to manage
+#   state: <state>      # Can be present or absent. Default is present
+# }
+
+at_deny: []
