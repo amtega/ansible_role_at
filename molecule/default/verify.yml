@@ -1,35 +1,12 @@
 ---
-# Tasks for testing role
 
-- name: Configure sandbox environment
-  hosts: localhost
-  roles:
-    - role: amtega.docker_presets
-      docker_presets_images_json_query: >-
-        [? starts_with(name, `centos-6`)
-           || starts_with(name, `centos-7`)
-           || starts_with(name, `fedora-29`)
-           || starts_with(name, `fedora-30`) ]
-  tags:
-    - sandbox
-
-- name: Setup testing sandbox
-  hosts: localhost
-  roles:
-    - role: amtega.docker_sandbox
-      docker_sandbox_state: started
-  tags:
-    - sandbox
-
-- name: Test at role
-  hosts: docker_sandbox_containers
-  roles:
-      - role: amtega.at
-        vars:
-          at_deny:
-            - username: nobody
-              state: present
+- name: Verify
+  hosts: molecule_hosts
+  gather_facts: no
   tasks:
+    - name: Include role vars
+      include_vars: ../../vars/main.yml
+
     - name: Read at config files
       stat:
         path: "{{ item }}"
@@ -62,14 +39,3 @@
         that:
           - read_at_allow_result.stdout is search("root")
           - read_at_deny_result.stdout is search("nobody")
-  tags:
-    - idempotence
-
-- name: Cleanup testing sandbox
-  hosts: localhost
-  roles:
-    - role: amtega.docker_sandbox
-      docker_sandbox_state: absent
-  tags:
-    - cleanup
-    - sandbox
