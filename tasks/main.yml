@@ -6,9 +6,9 @@
       lineinfile:
         path: /etc/at.allow
         line: "{{ at_user_item.username }}"
-        mode: 0600
         state: "{{ at_user_item.state | default('present') }}"
         create: yes
+        mode: "{{ at_mode }}"
       loop: "{{ at_allow }}"
       loop_control:
         loop_var: at_user_item
@@ -20,9 +20,9 @@
       lineinfile:
         path: /etc/at.deny
         line: "{{ at_user_item.username }}"
-        mode: 0600
         state: "{{ at_user_item.state | default('present') }}"
         create: yes
+        mode: "{{ at_mode }}"
       loop: "{{ at_deny }}"
       loop_control:
         loop_var: at_user_item
