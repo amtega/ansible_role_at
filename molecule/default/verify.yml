@@ -5,16 +5,16 @@
   gather_facts: no
   tasks:
     - name: Include role vars
-      include_vars: ../../vars/main.yml
+      ansible.builtin.include_vars: ../../vars/main.yml
 
     - name: Read at config files
-      stat:
+      ansible.builtin.stat:
         path: "{{ item }}"
       loop: "{{ at_files }}"
       register: check_files_result
 
     - name: Assert that permissions are correct
-      assert:
+      ansible.builtin.assert:
         that:
           - check_files_result.results[index].stat.mode == at_mode
           - check_files_result.results[index].stat.gr_name == at_group
@@ -25,17 +25,17 @@
         index_var: index
 
     - name: Read /etc/at.allow file
-      command: cat /etc/at.allow
+      ansible.builtin.command: cat /etc/at.allow
       register: read_at_allow_result
       changed_when: no
 
     - name: Read /etc/at.deny file
-      command: cat /etc/at.deny
+      ansible.builtin.command: cat /etc/at.deny
       register: read_at_deny_result
       changed_when: no
 
     - name: Assert at.allow and at.deny files are correct
-      assert:
+      ansible.builtin.assert:
         that:
           - read_at_allow_result.stdout is search("root")
           - read_at_deny_result.stdout is search("nobody")

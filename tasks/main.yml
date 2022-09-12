@@ -1,9 +1,9 @@
 ---
-# Role tasks
 
-- block:
+- name: Setup at
+  block:
     - name: Setup at.allow file
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/at.allow
         line: "{{ at_user_item.username }}"
         state: "{{ at_user_item.state | default('present') }}"
@@ -17,7 +17,7 @@
           {{ at_user_item.state | default('present') }}
 
     - name: Setup at.deny file
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/at.deny
         line: "{{ at_user_item.username }}"
         state: "{{ at_user_item.state | default('present') }}"
@@ -31,7 +31,7 @@
           {{ at_user_item.state | default('present') }}
 
     - name: Check at config files and directories
-      stat:
+      ansible.builtin.stat:
         path: "{{ at_perm_file_item }}"
       loop: "{{ at_files }}"
       loop_control:
@@ -39,7 +39,7 @@
       register: at_check_files_result
 
     - name: Setup at config files and directories
-      file:
+      ansible.builtin.file:
         path: "{{ at_file_item }}"
         owner: "{{ at_owner }}"
         group: "{{ at_group }}"
